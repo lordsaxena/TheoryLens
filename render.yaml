@@ -17,8 +17,5 @@ services:
     startCommand: npm run start -- --hostname 0.0.0.0
     healthCheckPath: /
     envVars:
-      - key: BACKEND_HOST
-        fromService:
-          type: web
-          name: theorylens-api
-          property: host
+      - key: NEXT_PUBLIC_API_URL
+        value: https://theorylens-api.onrender.com
