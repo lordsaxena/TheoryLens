@@ -1,0 +1,9 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+openai>=1.50
+pydantic>=2.7
+python-dotenv>=1.0
+python-multipart>=0.0.9
+numpy>=1.26
+# Optional, needs an NVIDIA GPU + CUDA 12 (pick the wheel that matches your CUDA):
+# cupy-cuda12x>=13.0
