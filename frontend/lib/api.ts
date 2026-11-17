@@ -1,6 +1,8 @@
 import type { BenchmarkResult, ParseResponse } from "./types";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const API =
+  process.env.NEXT_PUBLIC_API_URL ??
+  (process.env.NODE_ENV === "development" ? "http://localhost:8000" : "");
 
 async function handle<T>(res: Response): Promise<T> {
   if (!res.ok) {
