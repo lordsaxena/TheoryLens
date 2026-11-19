@@ -11,12 +11,53 @@ export interface SimParameter {
   unit: string;
 }
 
+export interface Derived {
+  id: string;
+  expr: string;
+}
+
 export interface SceneObject {
   id: string;
   shape: "sphere" | "box" | "cone" | "torus" | "cylinder";
   color: string;
   initial_position: Vec3;
   formula_hint: string;
+  motion?: [string, string, string] | null;
+  trail?: boolean;
+  glow?: boolean;
+  size?: number;
+}
+
+export interface LinkSpec {
+  source: string;
+  target: string;
+  kind: "spring" | "rod";
+}
+
+export interface SurfaceSpec {
+  height: string;
+  range: string;
+  size: number;
+  low: string;
+  high: string;
+}
+
+export interface FieldSpec {
+  fx: string;
+  fy: string;
+  fz: string;
+  extent: number;
+  flow: boolean;
+}
+
+export interface SwarmSpec {
+  x: string;
+  y: string;
+  z: string;
+  count: number;
+  color_a: string;
+  color_b: string;
+  size: number;
 }
 
 export interface Theory {
@@ -26,7 +67,12 @@ export interface Theory {
   summary: string;
   equations: string[];
   parameters: SimParameter[];
+  derived?: Derived[];
   objects: SceneObject[];
+  links?: LinkSpec[];
+  surface?: SurfaceSpec | null;
+  field?: FieldSpec | null;
+  swarm?: SwarmSpec | null;
 }
 
 export interface ParseResponse {

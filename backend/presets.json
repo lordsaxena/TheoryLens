@@ -1,0 +1,162 @@
+{
+  "oscillator": {
+    "title": "Damped Harmonic Oscillator",
+    "domain": "Classical Mechanics",
+    "simulation_type": "particle_kinematics",
+    "summary": "A mass on a spring loses energy to friction. The spring pulls it back toward equilibrium while damping shrinks every swing. The glowing trace behind the mass is the last six seconds of its position, so you can watch the envelope decay. Raise the damping past the critical value and the oscillation disappears.",
+    "equations": [
+      "m x'' + b x' + k x = 0",
+      "γ = b / 2m,   ω₀ = √(k/m),   ω_d = √(ω₀² − γ²)",
+      "x(t) = A e^(−γt) [cos(ω_d t) + (γ/ω_d) sin(ω_d t)]"
+    ],
+    "parameters": [
+      {"id": "mass", "label": "Mass (m)", "min": 0.5, "max": 5, "step": 0.1, "default": 1, "unit": "kg"},
+      {"id": "stiffness", "label": "Spring constant (k)", "min": 1, "max": 40, "step": 0.5, "default": 12, "unit": "N/m"},
+      {"id": "damping", "label": "Damping coefficient (b)", "min": 0, "max": 8, "step": 0.1, "default": 0.6, "unit": "kg/s"},
+      {"id": "amplitude", "label": "Initial displacement (A)", "min": 0.5, "max": 3, "step": 0.1, "default": 2, "unit": "m"}
+    ],
+    "derived": [
+      {"id": "g", "expr": "damping/(2*mass)"},
+      {"id": "w0sq", "expr": "stiffness/mass"},
+      {"id": "q2", "expr": "g^2-w0sq"},
+      {"id": "q", "expr": "sqrt(max(q2,0.0001))"},
+      {"id": "wd", "expr": "sqrt(max(-q2,0.0001))"},
+      {"id": "over", "expr": "step(q2)"},
+      {"id": "X", "expr": "amplitude*exp(-g*t)*(over*(cosh(q*t)+(g/q)*sinh(q*t))+(1-over)*(cos(wd*t)+(g/wd)*sin(wd*t)))"}
+    ],
+    "objects": [
+      {"id": "wall", "shape": "box", "color": "#64748b", "initial_position": [-4, 0, 0], "formula_hint": "Fixed wall: the spring's anchor", "motion": null, "trail": false, "glow": false, "size": 1.4},
+      {"id": "mass", "shape": "sphere", "color": "#76b900", "initial_position": [0, 0, 0], "formula_hint": "x(t) = A·e^(−γt)·[cos(ω_d t) + (γ/ω_d)·sin(ω_d t)]", "motion": ["X", "0", "0"], "trail": false, "glow": true, "size": 1.3}
+    ],
+    "links": [{"source": "wall", "target": "mass", "kind": "spring"}],
+    "surface": null,
+    "field": null,
+    "swarm": {
+      "x": "6-12*u",
+      "y": "3.2+0.8*amplitude*exp(-g*max(t-6*u,0))*(over*(cosh(q*max(t-6*u,0))+(g/q)*sinh(q*max(t-6*u,0)))+(1-over)*(cos(wd*max(t-6*u,0))+(g/wd)*sin(wd*max(t-6*u,0))))",
+      "z": "-4",
+      "count": 700,
+      "color_a": "#76b900",
+      "color_b": "#38bdf8",
+      "size": 0.14
+    }
+  },
+  "orbit": {
+    "title": "Orbital Gravity Well",
+    "domain": "Celestial Mechanics",
+    "simulation_type": "particle_kinematics",
+    "summary": "A massive star bends space into a gravity well. The planet and the comet ride that well on Kepler ellipses: they speed up when they dive toward the star and slow down far away. Heavier stars dig a deeper well and shorten every orbital period.",
+    "equations": [
+      "g(r) = −G M / r²",
+      "T² = 4π² a³ / (G M)",
+      "r(θ) = a (1 − e²) / (1 + e cos θ)"
+    ],
+    "parameters": [
+      {"id": "central_mass", "label": "Central mass (M)", "min": 1, "max": 50, "step": 1, "default": 10, "unit": "M☉"},
+      {"id": "orbit_radius", "label": "Semi-major axis (a)", "min": 3, "max": 8, "step": 0.1, "default": 5, "unit": "AU"},
+      {"id": "eccentricity", "label": "Eccentricity (e)", "min": 0, "max": 0.8, "step": 0.01, "default": 0.25, "unit": ""},
+      {"id": "time_scale", "label": "Time scale", "min": 0.2, "max": 3, "step": 0.1, "default": 1.5, "unit": "×"}
+    ],
+    "derived": [
+      {"id": "mu", "expr": "1.6*central_mass"},
+      {"id": "n1", "expr": "time_scale*sqrt(mu/orbit_radius^3)"},
+      {"id": "E1", "expr": "kepler(n1*t,eccentricity)"},
+      {"id": "px", "expr": "orbit_radius*(cos(E1)-eccentricity)"},
+      {"id": "pz", "expr": "orbit_radius*sqrt(1-eccentricity^2)*sin(E1)"},
+      {"id": "a2", "expr": "orbit_radius*1.35"},
+      {"id": "e2", "expr": "min(eccentricity+0.3,0.7)"},
+      {"id": "n2", "expr": "time_scale*sqrt(mu/a2^3)"},
+      {"id": "E2", "expr": "kepler(n2*t+1.3,e2)"},
+      {"id": "cx0", "expr": "a2*(cos(E2)-e2)"},
+      {"id": "cz0", "expr": "a2*sqrt(1-e2^2)*sin(E2)"},
+      {"id": "cx", "expr": "cx0*cos(0.9)-cz0*sin(0.9)"},
+      {"id": "cz", "expr": "cx0*sin(0.9)+cz0*cos(0.9)"},
+      {"id": "well0", "expr": "1.2*sqrt(central_mass)"},
+      {"id": "py", "expr": "-well0/sqrt(px^2+pz^2+1.5)+0.45"},
+      {"id": "cy", "expr": "-well0/sqrt(cx^2+cz^2+1.5)+0.4"},
+      {"id": "sy", "expr": "-well0/sqrt(1.5)+0.9"}
+    ],
+    "objects": [
+      {"id": "star", "shape": "sphere", "color": "#fbbf24", "initial_position": [0, 0, 0], "formula_hint": "g(r) = −GM/r²", "motion": ["0", "sy", "0"], "trail": false, "glow": true, "size": 1.6},
+      {"id": "planet", "shape": "sphere", "color": "#38bdf8", "initial_position": [5, 0, 0], "formula_hint": "r(θ) = a(1−e²)/(1+e·cosθ)", "motion": ["px", "py", "pz"], "trail": true, "glow": false, "size": 0.8},
+      {"id": "comet", "shape": "sphere", "color": "#f472b6", "initial_position": [7, 0, 0], "formula_hint": "T² ∝ a³ (Kepler's third law)", "motion": ["cx", "cy", "cz"], "trail": true, "glow": false, "size": 0.5}
+    ],
+    "links": [],
+    "surface": {"height": "-1.2*sqrt(central_mass)/sqrt(r^2+1.5)", "range": "1.1*sqrt(central_mass)", "size": 22, "low": "#312e81", "high": "#38bdf8"},
+    "field": null,
+    "swarm": null
+  },
+  "wave": {
+    "title": "3D Wave Interference",
+    "domain": "Wave Physics",
+    "simulation_type": "wave_field",
+    "summary": "Two point sources send out circular ripples that spread at the wave speed. Where crest meets crest the surface rises (constructive interference), and where crest meets trough it cancels (destructive interference), which draws the familiar fan of interference fringes. Move the sources apart or shorten the wavelength to add more fringes.",
+    "equations": [
+      "ψ(r, t) = Σᵢ A sin(k rᵢ − ωt) / (1 + 0.2 rᵢ)",
+      "k = 2π/λ,   ω = 2πf,   v = λf",
+      "Constructive: Δr = nλ      Destructive: Δr = (n + ½)λ"
+    ],
+    "parameters": [
+      {"id": "amplitude", "label": "Amplitude (A)", "min": 0.2, "max": 1.5, "step": 0.05, "default": 0.6, "unit": "m"},
+      {"id": "wavelength", "label": "Wavelength (λ)", "min": 1, "max": 6, "step": 0.1, "default": 2.5, "unit": "m"},
+      {"id": "frequency", "label": "Frequency (f)", "min": 0.2, "max": 3, "step": 0.05, "default": 1, "unit": "Hz"},
+      {"id": "separation", "label": "Source separation (d)", "min": 0, "max": 10, "step": 0.1, "default": 5, "unit": "m"}
+    ],
+    "derived": [
+      {"id": "k", "expr": "2*pi/wavelength"},
+      {"id": "w", "expr": "2*pi*frequency"},
+      {"id": "h", "expr": "separation/2"},
+      {"id": "c", "expr": "wavelength*frequency"}
+    ],
+    "objects": [
+      {"id": "source_a", "shape": "sphere", "color": "#fbbf24", "initial_position": [-2.5, 0.8, 0], "formula_hint": "ψ₁ = A sin(k r₁ − ωt)", "motion": ["-h", "amplitude+0.4", "0"], "trail": false, "glow": true, "size": 0.6},
+      {"id": "source_b", "shape": "sphere", "color": "#f472b6", "initial_position": [2.5, 0.8, 0], "formula_hint": "ψ₂ = A sin(k r₂ − ωt)", "motion": ["h", "amplitude+0.4", "0"], "trail": false, "glow": true, "size": 0.6}
+    ],
+    "links": [],
+    "surface": {
+      "height": "amplitude*(sin(k*hypot(x+h,z)-w*t)/(1+0.2*hypot(x+h,z))*(0.5+0.5*tanh(3*(c*t-hypot(x+h,z))))+sin(k*hypot(x-h,z)-w*t)/(1+0.2*hypot(x-h,z))*(0.5+0.5*tanh(3*(c*t-hypot(x-h,z)))))",
+      "range": "amplitude*1.5",
+      "size": 22,
+      "low": "#082f49",
+      "high": "#76b900"
+    },
+    "field": null,
+    "swarm": null
+  },
+  "dipole": {
+    "title": "Rotating Electric Dipole",
+    "domain": "Electromagnetism",
+    "simulation_type": "vector_field",
+    "summary": "A positive and a negative charge create an electric field that leaves the positive charge and curves into the negative one. The arrows show the field direction and strength; the drifting sparks trace the field lines. Here the dipole slowly rotates, treated as a quasi-static field that updates instantly.",
+    "equations": [
+      "E(r) = k q (r − r₊)/|r − r₊|³ − k q (r − r₋)/|r − r₋|³",
+      "V(r) = k q (1/|r − r₊| − 1/|r − r₋|)",
+      "p = q d   (dipole moment)"
+    ],
+    "parameters": [
+      {"id": "charge", "label": "Charge (q)", "min": 0.5, "max": 5, "step": 0.1, "default": 2, "unit": "µC"},
+      {"id": "separation", "label": "Separation (d)", "min": 1, "max": 8, "step": 0.1, "default": 4, "unit": "m"},
+      {"id": "spin", "label": "Rotation speed", "min": 0, "max": 2, "step": 0.05, "default": 0.5, "unit": "rad/s"}
+    ],
+    "derived": [
+      {"id": "h", "expr": "separation/2"},
+      {"id": "ang", "expr": "spin*t"},
+      {"id": "hx", "expr": "h*cos(ang)"},
+      {"id": "hz", "expr": "h*sin(ang)"}
+    ],
+    "objects": [
+      {"id": "positive", "shape": "sphere", "color": "#ef4444", "initial_position": [-2, 0, 0], "formula_hint": "+q: E = k q r̂ / r² (points away)", "motion": ["-hx", "0", "-hz"], "trail": false, "glow": true, "size": 0.9},
+      {"id": "negative", "shape": "sphere", "color": "#3b82f6", "initial_position": [2, 0, 0], "formula_hint": "−q: E = −k q r̂ / r² (points inward)", "motion": ["hx", "0", "hz"], "trail": false, "glow": true, "size": 0.9}
+    ],
+    "links": [],
+    "surface": null,
+    "field": {
+      "fx": "charge*((x+hx)/pow((x+hx)^2+y^2+(z+hz)^2+0.15,1.5)-(x-hx)/pow((x-hx)^2+y^2+(z-hz)^2+0.15,1.5))",
+      "fy": "charge*(y/pow((x+hx)^2+y^2+(z+hz)^2+0.15,1.5)-y/pow((x-hx)^2+y^2+(z-hz)^2+0.15,1.5))",
+      "fz": "charge*((z+hz)/pow((x+hx)^2+y^2+(z+hz)^2+0.15,1.5)-(z-hz)/pow((x-hx)^2+y^2+(z-hz)^2+0.15,1.5))",
+      "extent": 6,
+      "flow": true
+    },
+    "swarm": null
+  }
+}
